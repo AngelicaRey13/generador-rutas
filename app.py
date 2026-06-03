@@ -2,7 +2,7 @@
 import streamlit as st
 import pandas as pd
 from math import radians, sin, cos, sqrt, atan2
-from geopy.geocoders import Nominatim
+from streamlit_geolocation import streamlit_geolocation
 
 st.set_page_config(
     page_title="Generador de Rutas",
@@ -10,6 +10,10 @@ st.set_page_config(
 )
 
 st.title("🚗 Generador de Rutas")
+
+# ----------------------------
+# CARGAR BASE DE CLIENTES
+# ----------------------------
 
 try:
 
@@ -38,32 +42,45 @@ except Exception as e:
 
     st.stop()
 
+# ----------------------------
+# UBICACIÓN ACTUAL
+# ----------------------------
 
-def obtener_coordenadas(direccion):
+st.subheader("📍 Ubicación actual")
 
-    try:
+location = streamlit_geolocation()
 
-        geolocator = Nominatim(
-            user_agent="generador_rutas"
+lat_inicio = None
+lon_inicio = None
+
+if location:
+
+    lat_inicio = location.get("latitude")
+    lon_inicio = location.get("longitude")
+
+    if lat_inicio is not None and lon_inicio is not None:
+
+        st.success(
+            "Ubicación obtenida correctamente"
         )
 
-        location = geolocator.geocode(
-            direccion
+        st.write(
+            f"Latitud: {lat_inicio}"
         )
 
-        if location:
+        st.write(
+            f"Longitud: {lon_inicio}"
+        )
 
-            return (
-                location.latitude,
-                location.longitude
-            )
+else:
 
-        return None, None
+    st.info(
+        "Permita el acceso a la ubicación cuando el navegador lo solicite."
+    )
 
-    except:
-
-        return None, None
-
+# ----------------------------
+# DISTANCIA
+# ----------------------------
 
 def distancia(
     lat1,
@@ -96,6 +113,9 @@ def distancia(
 
     return R * c
 
+# ----------------------------
+# OPTIMIZAR RUTA
+# ----------------------------
 
 def optimizar_ruta(
     df,
@@ -139,6 +159,9 @@ def optimizar_ruta(
 
     return pd.DataFrame(ruta)
 
+# ----------------------------
+# GENERAR LINK
+# ----------------------------
 
 def generar_link(
     ruta,
@@ -160,18 +183,16 @@ def generar_link(
         + "/".join(destinos)
     )
 
+# ----------------------------
+# INGRESO DE CÓDIGOS
+# ----------------------------
 
 st.subheader(
-    "📍 Dirección de Inicio"
-)
-
-direccion_inicio = st.text_input(
-    "Ingrese la dirección desde donde iniciará la ruta",
-    placeholder="Ej: Cra 7 #72-41 Bogotá"
+    "📋 Seleccione método de carga"
 )
 
 modo = st.radio(
-    "Seleccione método de carga",
+    "",
     [
         "Ingreso manual",
         "Cargar archivo CSV"
@@ -179,6 +200,10 @@ modo = st.radio(
 )
 
 codigos = []
+
+# ----------------------------
+# INGRESO MANUAL
+# ----------------------------
 
 if modo == "Ingreso manual":
 
@@ -193,6 +218,10 @@ if modo == "Ingreso manual":
             for x in texto.split("\n")
             if x.strip()
         ]
+
+# ----------------------------
+# CARGAR ARCHIVO
+# ----------------------------
 
 else:
 
@@ -223,28 +252,18 @@ else:
             .tolist()
         )
 
+# ----------------------------
+# BOTÓN
+# ----------------------------
+
 if st.button(
-    "Generar Ruta"
+    "🚀 Generar Ruta"
 ):
 
-    if not direccion_inicio:
+    if lat_inicio is None or lon_inicio is None:
 
         st.warning(
-            "Debe ingresar una dirección de inicio."
-        )
-
-        st.stop()
-
-    lat_inicio, lon_inicio = (
-        obtener_coordenadas(
-            direccion_inicio
-        )
-    )
-
-    if lat_inicio is None:
-
-        st.error(
-            "No fue posible encontrar la dirección."
+            "Debe permitir el acceso a la ubicación."
         )
 
         st.stop()
@@ -262,11 +281,8 @@ if st.button(
         .isin(codigos)
     ]
 
-    seleccionados = (
-        seleccionados
-        .dropna(
-            subset=["lat", "lon"]
-        )
+    seleccionados = seleccionados.dropna(
+        subset=["lat", "lon"]
     )
 
     encontrados = len(
@@ -280,6 +296,7 @@ if st.button(
             seleccionados[
                 "codigo_cliente"
             ]
+            .astype(str)
         )
     )
 
@@ -303,9 +320,11 @@ if st.button(
             len(no_encontrados)
         )
 
-    st.success(
-        f"Se encontraron {encontrados} cuentas."
-    )
+    if encontrados > 0:
+
+        st.success(
+            f"Se encontraron {encontrados} cuentas."
+        )
 
     if len(no_encontrados) > 0:
 
@@ -322,7 +341,8 @@ if st.button(
     )
 
     st.dataframe(
-        seleccionados
+        seleccionados,
+        use_container_width=True
     )
 
     if encontrados > 20:
@@ -340,11 +360,12 @@ if st.button(
         )
 
         st.subheader(
-            "Ruta Optimizada"
+            "🛣️ Ruta Optimizada"
         )
 
         st.dataframe(
-            ruta
+            ruta,
+            use_container_width=True
         )
 
         link = generar_link(
