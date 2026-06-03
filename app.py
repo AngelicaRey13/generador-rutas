@@ -9,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("🚗 Generador de Rutas")
+st.title("🏍️ Generador de Rutas S&R")
 
 # ----------------------------
 # CARGAR BASE DE CLIENTES
