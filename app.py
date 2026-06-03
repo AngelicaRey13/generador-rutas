@@ -64,7 +64,31 @@ except Exception as e:
     )
 
     st.stop()
+clientes["lat"] = (
+    clientes["lat"]
+    .astype(str)
+    .str.replace(",", ".", regex=False)
+)
 
+clientes["lon"] = (
+    clientes["lon"]
+    .astype(str)
+    .str.replace(",", ".", regex=False)
+)
+
+clientes["lat"] = pd.to_numeric(
+    clientes["lat"],
+    errors="coerce"
+)
+
+clientes["lon"] = pd.to_numeric(
+    clientes["lon"],
+    errors="coerce"
+)
+
+clientes = clientes.dropna(
+    subset=["lat", "lon"]
+)
 # ----------------------------
 # UBICACIÓN ACTUAL
 # ----------------------------
