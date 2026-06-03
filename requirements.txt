@@ -1,5 +1,4 @@
 streamlit
 pandas
 geopy
-glob
 streamlit-geolocation
