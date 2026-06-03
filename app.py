@@ -3,6 +3,7 @@ import streamlit as st
 import pandas as pd
 from math import radians, sin, cos, sqrt, atan2
 from streamlit_geolocation import streamlit_geolocation
+import glob
 
 st.set_page_config(
     page_title="Generador de Rutas",
@@ -17,9 +18,25 @@ st.title("🏍️ Generador de Rutas S&R")
 
 try:
 
-    clientes = pd.read_csv(
-        "clientes.csv",
-        sep=";"
+    archivos_clientes = glob.glob(
+        "clientes*.csv"
+    )
+
+    if len(archivos_clientes) == 0:
+
+        raise Exception(
+            "No se encontraron archivos que inicien por 'clientes'"
+        )
+
+    clientes = pd.concat(
+        [
+            pd.read_csv(
+                archivo,
+                sep=";"
+            )
+            for archivo in archivos_clientes
+        ],
+        ignore_index=True
     )
 
     clientes.columns = (
@@ -34,10 +51,16 @@ try:
         .str.strip()
     )
 
+    st.success(
+        f"Base cargada correctamente. "
+        f"Archivos encontrados: {len(archivos_clientes)} | "
+        f"Registros: {len(clientes):,}"
+    )
+
 except Exception as e:
 
     st.error(
-        f"Error cargando clientes.csv: {e}"
+        f"Error cargando bases de clientes: {e}"
     )
 
     st.stop()
