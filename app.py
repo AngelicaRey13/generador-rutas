@@ -255,9 +255,10 @@ codigos = []
 
 if modo == "Ingreso manual":
 
- texto = st.text_area(
-    "Ingrese un código por línea"
-  )
+    texto = st.text_area(
+        "Ingrese un código por línea"
+    )
+
     if texto:
 
         codigos = [
@@ -272,10 +273,10 @@ if modo == "Ingreso manual":
 
 else:
 
-   archivo = st.file_uploader(
-    "Seleccione archivo CSV",
-    type=["csv"]
-)
+    archivo = st.file_uploader(
+        "Seleccione archivo CSV",
+        type=["csv"]
+    )
 
     if archivo:
 
