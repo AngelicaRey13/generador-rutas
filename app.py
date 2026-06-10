@@ -12,15 +12,6 @@ st.set_page_config(
 
 st.title("🏍️ Generador de Rutas S&R")
 
-# ----------------------------
-# INICIALIZAR SESSION STATE
-# ----------------------------
-
-if "texto_codigos" not in st.session_state:
-    st.session_state.texto_codigos = ""
-
-if "archivo_csv" not in st.session_state:
-    st.session_state.archivo_csv = None
 
 # ----------------------------
 # CARGAR BASE DE CLIENTES
@@ -264,11 +255,9 @@ codigos = []
 
 if modo == "Ingreso manual":
 
-   texto = st.text_area(
-    "Ingrese un código por línea",
-    key="texto_codigos"
-)
-
+ texto = st.text_area(
+    "Ingrese un código por línea"
+  )
     if texto:
 
         codigos = [
@@ -283,10 +272,9 @@ if modo == "Ingreso manual":
 
 else:
 
-    archivo = st.file_uploader(
+   archivo = st.file_uploader(
     "Seleccione archivo CSV",
-    type=["csv"],
-    key="archivo_csv"
+    type=["csv"]
 )
 
     if archivo:
@@ -312,23 +300,25 @@ else:
         )
 
 # ----------------------------
-# BOTÓN
+# BOTONES
 # ----------------------------
+
 col1, col2 = st.columns(2)
 
 with col1:
-
     generar = st.button(
         "🚀 Generar Ruta",
         use_container_width=True
     )
 
 with col2:
-
     limpiar = st.button(
-        "🧹 Limpiar",
+        "🧹 Limpiar Consulta",
         use_container_width=True
     )
+
+if limpiar:
+    st.rerun()
 
 if generar:
 
@@ -450,18 +440,3 @@ if generar:
             "🗺️ Abrir Ruta en Google Maps",
             link
         )
-
-        if limpiar:
-
-    st.session_state.texto_codigos = ""
-
-    # elimina todos los valores temporales
-    for key in list(st.session_state.keys()):
-
-        if key not in [
-            "texto_codigos",
-            "archivo_csv"
-        ]:
-            del st.session_state[key]
-
-    st.rerun()
